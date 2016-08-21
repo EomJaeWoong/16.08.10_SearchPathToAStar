@@ -5,6 +5,11 @@
 #define MAPSIZE_X 100
 #define TILE_SIZE 15
 
+#define BLANK 0
+#define START 1
+#define END 2
+#define OBSTICLE 3
+
 struct NODE
 {
 	int iX;
@@ -17,6 +22,10 @@ struct NODE
 	NODE *pParent;
 };
 
-void DrawMap(HDC hdc);
-
+void		InitMap();
+void		DrawMap(HDC hdc);
+void		CreateStart(int iX, int iY);
+void		CreateEnd(int iX, int iY);
+void		CreateObsticle(int iX, int iY);
+void		SetisObsc(BOOL bObsc);
 #endif

@@ -13,7 +13,8 @@ HWND g_hWnd;
 HDC g_hMemDC;
 HBITMAP g_hMemBitmap;
 HBITMAP g_hMemBitmapold;
-RECT WinRect;
+RECT rWinRect;
+BOOL isObst;
 
 // 이 코드 모듈에 들어 있는 함수의 정방향 선언입니다.
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -32,7 +33,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
@@ -80,26 +81,59 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static BOOL isDrag = FALSE;
+	static int x;
+	static int y;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
 	switch (message)
 	{               
 	case WM_CREATE :
-		GetClientRect(g_hWnd, &WinRect);
+		InitMap();
+		break;
+
+	case WM_LBUTTONDOWN :
+		CreateStart(LOWORD(lParam) / TILE_SIZE, HIWORD(lParam) / TILE_SIZE);
+		InvalidateRect(g_hWnd, NULL, false);
+		break;
+
+	case WM_RBUTTONDBLCLK :
+		CreateEnd(LOWORD(lParam) / TILE_SIZE, HIWORD(lParam) / TILE_SIZE);
+		InvalidateRect(g_hWnd, NULL, false);
+		break;
+
+	case WM_RBUTTONDOWN :
+		SetisObsc(TRUE);
+		isDrag = TRUE;
+		break;
+
+	case WM_RBUTTONUP :
+		isDrag = FALSE;
+		break;
+
+	case WM_MOUSEMOVE :
+		if (isDrag)
+		{
+			CreateObsticle(LOWORD(lParam) / TILE_SIZE, HIWORD(lParam) / TILE_SIZE);
+			InvalidateRect(g_hWnd, NULL, false);
+		}
+		break;
+
+	case WM_PAINT:
+		GetClientRect(g_hWnd, &rWinRect);
+
 		hdc = GetDC(g_hWnd);
-		g_hMemBitmap = CreateCompatibleBitmap(hdc, WinRect.right, WinRect.bottom);
+		g_hMemBitmap = CreateCompatibleBitmap(hdc, rWinRect.right, rWinRect.bottom);
 		g_hMemDC = CreateCompatibleDC(hdc);
 		g_hMemBitmapold = (HBITMAP)SelectObject(g_hMemDC, g_hMemBitmap);
 		ReleaseDC(g_hWnd, hdc);
 
+		PatBlt(g_hMemDC, 0, 0, rWinRect.right, rWinRect.bottom, WHITENESS);
 		DrawMap(g_hMemDC);
-		
-		break;
 
-	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		BitBlt(hdc, 0, 0, WinRect.right, WinRect.bottom, g_hMemDC, 0, 200, SRCCOPY);
+		BitBlt(hdc, 0, 0, rWinRect.right, rWinRect.bottom, g_hMemDC, 0, 0, SRCCOPY);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
