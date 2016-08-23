@@ -82,15 +82,26 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL isDrag = FALSE;
-	static int x;
-	static int y;
+	static HANDLE hTimer;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
 	switch (message)
 	{               
 	case WM_CREATE :
-		InitMap();
+		Init();
+		hTimer = (HANDLE)SetTimer(g_hWnd, 1, 1000, NULL);
+		break;
+
+	case WM_TIMER :
+		InvalidateRect(g_hWnd, NULL, false);
+		break;
+
+	case WM_CHAR :
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000){
+			InitMap();
+			SearchToAstar(g_hWnd);
+		}
 		break;
 
 	case WM_LBUTTONDOWN :
@@ -106,6 +117,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_RBUTTONDOWN :
 		SetisObsc(TRUE);
 		isDrag = TRUE;
+
 		break;
 
 	case WM_RBUTTONUP :
