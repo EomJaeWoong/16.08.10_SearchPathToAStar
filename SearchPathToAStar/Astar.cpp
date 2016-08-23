@@ -5,6 +5,7 @@ BYTE MAP[MAPSIZE_Y][MAPSIZE_X];
 int iStartX, iStartY, iEndX, iEndY;
 BOOL isObsc, bObsticle;
 list<NODE *> ltOpenlist, ltCloselist;
+NODE *EndNode;
 
 void Init()
 {
@@ -18,6 +19,8 @@ void Init()
 	iStartY = -1;
 	iEndX = -1;
 	iEndY = -1;
+
+	EndNode = NULL;
 
 	isObsc = TRUE;
 	bObsticle = TRUE;
@@ -34,6 +37,8 @@ void InitMap()
 			if (MAP[iCntY][iCntX] != OBSTICLE)
 			MAP[iCntY][iCntX] = BLANK;
 	}
+
+	EndNode = NULL;
 
 	MAP[iStartY][iStartX] = START;
 	MAP[iEndY][iEndX] = END;
@@ -60,19 +65,12 @@ void SearchToAstar(HWND hWnd)
 
 		if (stSearchNode->iX == iEndX && stSearchNode->iY == iEndY)
 		{
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-				delete *iter;
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-				delete *iter;
-
-			ltOpenlist.clear();
-			ltCloselist.clear();
-
-			return;
+			EndNode = stSearchNode;
+			break;
 			//부모와의 경로 그리고 끝
 		}
 
+		for ()
 		ltCloselist.push_back(stSearchNode);
 		MAP[stSearchNode->iY][stSearchNode->iX] = DONE;
 
@@ -81,23 +79,9 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX && (*iter)->iY == stSearchNode->iY - 1)
-				{
+			if (MAP[stSearchNode->iY - 1][stSearchNode->iX] == CREATE ||
+				MAP[stSearchNode->iY - 1][stSearchNode->iX] == DONE)
 					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX && (*iter)->iY == stSearchNode->iY - 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
 
 			if (!isExist)
 			{
@@ -111,27 +95,13 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY - 1)
-				{
+			if (MAP[stSearchNode->iY - 1][stSearchNode->iX + 1] == CREATE ||
+				MAP[stSearchNode->iY - 1][stSearchNode->iX + 1] == DONE)
 					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY - 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
 
 			if (!isExist)
 			{
-				ltOpenlist.push_back(CreateNode(stSearchNode->iX + 1, (stSearchNode->iY) - 1, stSearchNode->fG + 1, stSearchNode));
+				ltOpenlist.push_back(CreateNode(stSearchNode->iX + 1, (stSearchNode->iY) - 1, stSearchNode->fG + 1.5f, stSearchNode));
 				MAP[stSearchNode->iY - 1][stSearchNode->iX + 1] = CREATE;
 			}
 		}
@@ -141,23 +111,9 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY)
-				{
+			if (MAP[stSearchNode->iY][stSearchNode->iX + 1] == CREATE ||
+				MAP[stSearchNode->iY][stSearchNode->iX + 1] == DONE)
 					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
 
 			if (!isExist)
 			{
@@ -171,27 +127,13 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY + 1)
-				{
+			if (MAP[stSearchNode->iY + 1][stSearchNode->iX + 1] == CREATE ||
+				MAP[stSearchNode->iY + 1][stSearchNode->iX + 1] == DONE)
 					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX + 1 && (*iter)->iY == stSearchNode->iY + 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
 
 			if (!isExist)
 			{
-				ltOpenlist.push_back(CreateNode(stSearchNode->iX + 1, stSearchNode->iY + 1, stSearchNode->fG + 1, stSearchNode));
+				ltOpenlist.push_back(CreateNode(stSearchNode->iX + 1, stSearchNode->iY + 1, stSearchNode->fG + 1.5f, stSearchNode));
 				MAP[stSearchNode->iY + 1][stSearchNode->iX + 1] = CREATE;
 			}
 		}
@@ -201,23 +143,9 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX && (*iter)->iY == stSearchNode->iY + 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX && (*iter)->iY == stSearchNode->iY + 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
+			if (MAP[stSearchNode->iY + 1][stSearchNode->iX] == CREATE ||
+				MAP[stSearchNode->iY + 1][stSearchNode->iX] == DONE)
+				isExist = TRUE;
 
 			if (!isExist)
 			{
@@ -231,27 +159,13 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY + 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY + 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
+			if (MAP[stSearchNode->iY + 1][stSearchNode->iX - 1] == CREATE ||
+				MAP[stSearchNode->iY + 1][stSearchNode->iX - 1] == DONE)
+				isExist = TRUE;
 
 			if (!isExist)
 			{
-				ltOpenlist.push_back(CreateNode(stSearchNode->iX - 1, (stSearchNode->iY) + 1, stSearchNode->fG + 1, stSearchNode));
+				ltOpenlist.push_back(CreateNode(stSearchNode->iX - 1, (stSearchNode->iY) + 1, stSearchNode->fG + 1.5f, stSearchNode));
 				MAP[stSearchNode->iY + 1][stSearchNode->iX - 1] = CREATE;
 			}
 		}
@@ -261,23 +175,10 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
+			if (MAP[stSearchNode->iY][stSearchNode->iX - 1] == CREATE ||
+				MAP[stSearchNode->iY][stSearchNode->iX - 1] == DONE)
+				isExist = TRUE;
 
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
 
 			if (!isExist)
 			{
@@ -291,27 +192,13 @@ void SearchToAstar(HWND hWnd)
 		{
 			BOOL isExist = FALSE;
 
-			for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY - 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
-
-			for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
-			{
-				if ((*iter)->iX == stSearchNode->iX - 1 && (*iter)->iY == stSearchNode->iY - 1)
-				{
-					isExist = TRUE;
-					break;
-				}
-			}
+			if (MAP[stSearchNode->iY - 1][stSearchNode->iX - 1] == CREATE ||
+				MAP[stSearchNode->iY - 1][stSearchNode->iX - 1] == DONE)
+				isExist = TRUE;
 
 			if (!isExist)
 			{
-				ltOpenlist.push_back(CreateNode(stSearchNode->iX - 1, (stSearchNode->iY) - 1, stSearchNode->fG + 1, stSearchNode));
+				ltOpenlist.push_back(CreateNode(stSearchNode->iX - 1, (stSearchNode->iY) - 1, stSearchNode->fG + 1.5f, stSearchNode));
 				MAP[stSearchNode->iY - 1][stSearchNode->iX - 1] = CREATE;
 			}
 		}
@@ -319,14 +206,15 @@ void SearchToAstar(HWND hWnd)
 		MAP[iStartY][iStartX] = START;
 		MAP[iEndY][iEndX] = END;
 
-		SendMessage(hWnd, WM_TIMER, 1, 0);
+		InvalidateRect(hWnd, NULL, false);
+		SendMessage(hWnd, WM_PAINT, 0, 0);
 	}
 }
 
 /*---------------------------------------------------------------------------------*/
 // Node 생성
 /*---------------------------------------------------------------------------------*/
-NODE* CreateNode(int iX, int iY, int fG, NODE *pParent)
+NODE* CreateNode(int iX, int iY, float fG, NODE *pParent)
 {
 	NODE* stNode = new NODE;
 	stNode->iX = iX;
@@ -340,12 +228,30 @@ NODE* CreateNode(int iX, int iY, int fG, NODE *pParent)
 	return stNode;
 }
 
+void ReleaseList()
+{
+	list<NODE *>::iterator iter;
+
+	for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
+		delete *iter;
+
+	for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
+		delete *iter;
+
+	ltOpenlist.clear();
+	ltCloselist.clear();
+
+	EndNode = NULL;
+}
 
 /*---------------------------------------------------------------------------------*/
 // Draw
 /*---------------------------------------------------------------------------------*/
 void DrawMap(HDC hdc)
 {
+	TCHAR text[20];
+	list<NODE *>::iterator iter;
+
 	/*---------------------------------------------------------------------------------*/
 	// Map 그리기
 	/*---------------------------------------------------------------------------------*/
@@ -368,6 +274,21 @@ void DrawMap(HDC hdc)
 
 	SelectObject(hdc, hPenOld);
 	hPenOld = (HPEN)SelectObject(hdc, hNullPen);
+
+	/*---------------------------------------------------------------------------------*/
+	/*test*/
+	for (iter = ltOpenlist.begin(); iter != ltOpenlist.end(); ++iter)
+	{
+		swprintf_s(text, TEXT("%.2f"), (*iter)->fG);
+		TextOut(hdc, (*iter)->iX * TILE_SIZE, (*iter)->iY * TILE_SIZE, text, wcslen(text));
+	}
+	
+	for (iter = ltCloselist.begin(); iter != ltCloselist.end(); ++iter)
+	{
+		swprintf_s(text, TEXT("%.2f"), (*iter)->fG);
+		TextOut(hdc, (*iter)->iX * TILE_SIZE, (*iter)->iY * TILE_SIZE, text, wcslen(text));
+	}
+	/*---------------------------------------------------------------------------------*/
 
 	for (int iCntY = 0; iCntY < MAPSIZE_Y; iCntY++)
 	{
@@ -424,6 +345,7 @@ void DrawMap(HDC hdc)
 				DeleteObject(hBrushOld);
 			}
 
+			/*
 			else if (MAP[iCntY][iCntX] == CREATE)
 			{
 				HBRUSH hBrush, hBrushOld;
@@ -451,6 +373,7 @@ void DrawMap(HDC hdc)
 				DeleteObject(hBrush);
 				DeleteObject(hBrushOld);
 			}
+			*/
 		}
 	}
 	SelectObject(hdc, hPenOld);
@@ -458,6 +381,26 @@ void DrawMap(HDC hdc)
 	DeleteObject(hPen);
 	DeleteObject(hPenOld);
 	DeleteObject(hNullPen);
+}
+
+void DrawPath(HDC hdc)
+{
+	HPEN hPen, hPenOld;
+	hPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+	hPenOld = (HPEN)SelectObject(hdc, hPen);
+
+	if (EndNode != NULL){
+		while (EndNode->pParent != NULL)
+		{
+			MoveToEx(hdc, (EndNode->iX * TILE_SIZE) + (TILE_SIZE / 2),
+				(EndNode->iY * TILE_SIZE) + (TILE_SIZE / 2), NULL);
+			LineTo(hdc, (EndNode->pParent->iX * TILE_SIZE) + (TILE_SIZE / 2),
+				(EndNode->pParent->iY * TILE_SIZE) + (TILE_SIZE / 2));
+			EndNode = EndNode->pParent;
+		}
+	}
+	SelectObject(hdc, hPenOld);
+	DeleteObject(hPen);
 }
 
 /*---------------------------------------------------------------------------------*/

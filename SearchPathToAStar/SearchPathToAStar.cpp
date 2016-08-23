@@ -82,7 +82,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL isDrag = FALSE;
-	static HANDLE hTimer;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
@@ -90,17 +89,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{               
 	case WM_CREATE :
 		Init();
-		hTimer = (HANDLE)SetTimer(g_hWnd, 1, 1000, NULL);
-		break;
-
-	case WM_TIMER :
-		InvalidateRect(g_hWnd, NULL, false);
 		break;
 
 	case WM_CHAR :
 		if (GetAsyncKeyState(VK_SPACE) & 0x8000){
 			InitMap();
 			SearchToAstar(g_hWnd);
+			InvalidateRect(g_hWnd, NULL, false);
+			SendMessage(hWnd, WM_PAINT, 0, 0);
 		}
 		break;
 
@@ -143,11 +139,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		PatBlt(g_hMemDC, 0, 0, rWinRect.right, rWinRect.bottom, WHITENESS);
 		DrawMap(g_hMemDC);
+		DrawPath(g_hMemDC);
 
 		hdc = BeginPaint(hWnd, &ps);
 		BitBlt(hdc, 0, 0, rWinRect.right, rWinRect.bottom, g_hMemDC, 0, 0, SRCCOPY);
 		EndPaint(hWnd, &ps);
 		break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
